@@ -1,0 +1,318 @@
+# Project Development Kit (PDK)
+
+**Project:** Bondli — Corporate Bond Liquidity Platform (prototype)
+
+**Purpose:** Deliver a functional prototype that increases trading activity and transparency in illiquid corporate bond markets (India-focused), using matching, fractional ownership, and optional tokenisation.
+
+---
+
+## 1. Executive Summary
+
+Bondli is a regulated, digital marketplace that enables matching of buyers and sellers of corporate bonds, provides robust price discovery, and increases participation through fractional ownership and liquidity incentives. The MVP focuses on primary features required to demonstrate improved market activity and transparent pricing while remaining compliant with Indian regulations.
+
+---
+
+## 2. Goals & Success Metrics
+
+**Primary goals**
+
+* Demonstrate increased number of trades and active participants for selected bond issues.
+* Provide transparent, real-time price discovery and yield data.
+* Enable fractional ownership down to retail-friendly ticket sizes.
+
+**Success metrics (MVP)**
+
+* Number of unique buyers and sellers (target: 100+ within pilot cohort).
+* Volume traded (target: ₹X crore in pilot period — set per pilot scale).
+* Average time-to-match (benchmark vs OTC baseline).
+* Bid-ask spread tightening for listed pilot bonds.
+* Participant satisfaction (qualitative feedback).
+
+---
+
+## 3. MVP Scope (must-have)
+
+1. User onboarding with KYC/AML (India-compliant).
+2. Bond catalog & metadata (ISIN, issuer, face value, coupon, maturity, rating).
+3. Fractionalisation engine (split bonds into fungible units, e.g., ₹10,000 lots).
+4. Order book & matching engine (limit, market, fill-or-kill options).
+5. Settlement simulator (T+0/T+1 workflow for prototype) + ledger for ownership.
+6. Pricing dashboard: live bids/asks, last traded price, yield curve view, historical trades.
+7. Market-maker/incentive module (rebates/fees management).
+8. Admin dashboard for issuers and compliance officers.
+
+---
+
+## 4. Nice-to-have (post-MVP)
+
+* Blockchain tokenisation of bond fractions + on-chain settlement.
+* Auction mechanisms for low-liquidity blocks.
+* Cross-listing with institutional OMS/EMS integration.
+* Secondary-market liquidity pools and AMM-style mechanisms for bonds.
+* Credit risk analytics & news feed integration.
+
+---
+
+## 5. Target Users & Personas
+
+* **Retail investors** — want access to corporate bonds at low ticket sizes.
+* **HNI & Family Offices** — want trading flexibility and price discovery.
+* **Institutional market makers / banks** — provide liquidity and quote prices.
+* **Issuers & Trustees** — view investor holdings and manage corporate actions.
+* **Regulators/Compliance Officers** — audit trails, reporting.
+
+---
+
+## 6. Key Features (detailed)
+
+### 6.1 Order Types & Matching
+
+* **Limit orders**, **market orders**, **iceberg orders** (optional).
+* Matching engine configurable to support: continuous limit order book and periodic call auctions for thinly-traded ISINs.
+* Partial fills allowed; orders can be divisible for fractions.
+
+### 6.2 Fractional Ownership
+
+* Primary model: centralised ledger with fractionalized units tied to an underlying ISIN.
+* Fraction size configurable (e.g., ₹1,000 / ₹10,000).
+* Ownership recorded in the platform ledger; settlement moves units between participant accounts.
+
+### 6.3 Price Discovery & Analytics
+
+* Live order book for each ISIN with aggregated depth and indicative yields.
+* Time-weighted average price (TWAP), last traded price, spread analytics.
+* Historical trade tape, volume, and liquidity heatmaps.
+
+### 6.4 Incentives & Market Making
+
+* Fee rebates / maker-taker model for market makers.
+* Staking-based incentives: market makers stake capital to receive higher rebates.
+* Liquidity mining for retail (temporary rewards for placing limit orders that execute).
+
+### 6.5 Compliance & Risk Controls
+
+* KYC/AML integration (Aadhaar + PAN + video KYC optional).
+* Trade surveillance alerts for suspicious activity.
+* Pre-trade risk checks (position limits, sanction lists).
+
+### 6.6 Settlement & Custody (MVP Approach)
+
+* Internal clearing ledger in prototype (custodian integration optional later).
+* Simulated cash settlement (or partner with escrow banks for MVP).
+* For tokenised variant: on-chain tokens + off-chain settlement oracle bridging.
+
+---
+
+## 7. Architecture Overview
+
+**High-level components:**
+
+* Frontend: React/Next.js dashboard for traders, issuers, and admins.
+* API Layer: Node.js/Express or FastAPI; REST/GraphQL endpoints.
+* Matching Engine: Highly-performant service (Go/Java) with in-memory order books.
+* Database: PostgreSQL for relational data; Redis for order book/cache; ElasticSearch for trade tape/search.
+* Ledger: Immutable append-only ledger (Postgres + write-ahead log). For tokenisation: smart contracts on a permissioned blockchain (Hyperledger/Polygon PoS private net).
+* KYC Provider: Integration with third-party KYC vendors (e.g., DigiLocker / third-party vendors in India).
+* Admin/Compliance: UI + background job processors for surveillance.
+
+---
+
+## 8. Data Model (simplified)
+
+**Core entities:**
+
+* User (id, KYC\_status, type\[retail/institutional], wallet\_id)
+* Account (user\_id, cash\_balance, reserved\_balance)
+* Bond (ISIN, issuer\_id, coupon, maturity\_date, face\_value, rating)
+* Fraction (bond\_id, fraction\_size, total\_fractions)
+* Order (order\_id, user\_id, bond\_id, fraction\_qty, price, type, status)
+* Trade (trade\_id, buy\_order\_id, sell\_order\_id, price, qty, timestamp)
+* LedgerEntry (entry\_id, account\_id, delta\_cash, delta\_fraction, reason, timestamp)
+
+---
+
+## 9. Tokenisation Design (optional path)
+
+**Two-layer approach:**
+
+1. **Off-chain fractional ledger** for MVP (quicker, regulatory-friendly).
+2. **Tokenised variant (Phase 2):**
+
+   * Each fraction = ERC-20-like token on a permissioned chain.
+   * Custody: Tokens held in a regulated custodian / smart contract; on-chain transfers reflect ownership.
+   * Oracle & bridge: Link on-chain tokens to off-chain settlement/cash movements.
+
+**Benefits:** programmable dividends, faster atomic transfers, auditability.
+
+**Regulatory caution:** Tokenisation in India requires careful consultation with regulators (SEBI/RBI). Start with non-transferable on-chain proofs or permissioned chains and custodial wallet model.
+
+---
+
+## 10. Compliance & Legal Considerations (India)
+
+* **SEBI oversight:** Corporate bonds are securities — platform likely falls under SEBI regulations for a trading platform/marketplace. Consult legal counsel.
+* **Custody & settlement:** Partner with a regulated custodian or clearing corporation if moving beyond prototype.
+* **KYC / AML:** Must follow PMLA/Indian KYC norms; maintain audit logs for regulators.
+* **Investor categorisation:** Retail vs. non-retail rules differ; comply with disclosure and suitability norms.
+* **Tax reporting:** Provide necessary 26AS/IT reporting for investors.
+
+---
+
+## 11. UX & Flows
+
+**Main user flows:**
+
+1. Onboard (signup → KYC → bank linkage → fund deposit)
+2. Browse Bonds (filter by issuer, rating, maturity, yield)
+3. Place Order (choose fraction size → limit/market → preview fees & settlement date)
+4. Order Match & Trade Confirmation (real-time notification, trade tape update)
+5. Settlement & Holdings (post-settlement portfolio view, ability to request exit/sell)
+6. Market Maker Portal (quote management, inventory view, risk controls)
+
+**UI components:** Bond card, Order book widget, Trade ticket modal, Holdings ledger, Yield curve chart, Notification center.
+
+---
+
+## 12. API Surface (essential endpoints)
+
+* `POST /auth/signup` — create user
+* `POST /auth/kyc` — submit KYC
+* `GET /bonds` — list bonds + metadata
+* `GET /orderbook/:isin` — live order book
+* `POST /orders` — place order
+* `GET /orders/:id` — order status
+* `GET /trades` — trade tape
+* `POST /settlement/simulate` — settlement simulation (admin)
+* `GET /portfolio/:user` — holdings
+
+---
+
+## 13. Matching Engine — Design Notes
+
+* Use price-time priority matching for continuous order book.
+* For ultra-thin ISINs, enable periodic call auctions (e.g., once per hour) to aggregate liquidity.
+* Keep matching engine stateless in API layer; persist events to a durable queue (Kafka) and update orderbook in-memory service.
+* Provide `indicative_price` when no trades exist, computed from nearby ISINs, market yields, and submitted quotes.
+
+---
+
+## 14. Incentive Mechanisms
+
+* **Maker rebates:** small % rebate on transaction fees for posted liquidity that executes.
+* **Volume tiers:** fee discounts for high-volume institutions.
+* **Liquidity mining pool (pilot):** credits/rewards in platform tokens (non-financial value) redeemable for fee waivers.
+
+---
+
+## 15. Risk & Mitigations
+
+* **Regulatory risk:** Engage counsel; aim MVP as a marketplace/facilitator, not a regulated exchange.
+* **Counterparty risk:** Custodial segregation of funds and reserves.
+* **Credit risk:** Provide rating and issuer data; consider requiring margin or settlement guarantees for some trades.
+* **Operational risk:** Disaster recovery for orderbook & backups; rate-limiting to prevent flash crashes.
+
+---
+
+## 16. Testing & Pilot Strategy
+
+**Pilot cohort:** invite 3–5 issuers/trustees and a mix of 50–200 investors + 2 market makers.
+
+**Test plan:**
+
+* Unit & integration tests for matching engine.
+* End-to-end tests for onboarding, KYC, funding, trading.
+* Load tests (simulate bursts) and soak tests.
+* Compliance audit & penetration test.
+
+**Pilot duration:** 8–12 weeks.
+
+---
+
+## 17. Team & Roles (suggested)
+
+* Product Manager (1)
+* Backend Engineers (2–3) — matching engine & APIs
+* Frontend Engineers (1–2)
+* DevOps/Cloud Engineer (1)
+* QA Engineer (1)
+* Compliance/Legal advisor (contract)
+* Market Maker / BizDev lead (1) — to onboard liquidity partners
+
+---
+
+## 18. Tech Stack Recommendations
+
+* Frontend: React + Next.js
+* Backend: Go (matching engine) + Node.js / FastAPI (APIs)
+* DB: PostgreSQL + Redis
+* Messaging: Kafka / RabbitMQ
+* Hosting: AWS / GCP (EKS + RDS)
+* Identity: OAuth + integration with KYC vendors
+* Optional Blockchain: Hyperledger Fabric or permissioned Polygon sidechain
+
+---
+
+## 19. Cost & Resource Estimate (prototype)
+
+* Engineering (3 months): \~₹10–20 Lakh (varies by hiring/contracting)
+* Cloud infra & 3rd-party fees (KYC, payments): ₹50k–2L / month
+* Legal & compliance: contract retainer (₹1–3L) for consultations
+
+---
+
+## 20. Roadmap (12–24 weeks)
+
+**Weeks 1–4:** Detailed requirements, legal alignment, system architecture, basic frontend & API
+**Weeks 5–8:** Matching engine core, fractional ledger, KYC integration, basic UI
+**Weeks 9–12:** Order book, settlement simulator, market-maker portal, analytics
+**Weeks 13–16:** Pilot onboarding, testing, incentives rollout
+**Weeks 17–24:** Iterate, integrate custodian/tokenisation PoC, regulatory engagement for scale
+
+---
+
+## 21. Demo & Pitch Materials
+
+Prepare:
+
+* One-page product overview
+* Flow demo (screen recording) of placing an order and trade
+* Pilot results dashboard (liquidity metrics)
+* Compliance summary & risk mitigation
+
+---
+
+## 22. Next Steps (immediate)
+
+1. Validate regulatory constraints with a securities lawyer (India / SEBI angle).
+2. Recruit 1–2 incumbent market makers and 1 issuer for pilot commitments.
+3. Build a clickable UI prototype (Figma) and an API mock server.
+4. Implement core matching + fractional ledger for MVP.
+
+---
+
+### Appendix A — Example Fractional Flow (user journey)
+
+1. Issuer lists ISIN ABC123 with face value ₹10,00,000 (1 bond).
+2. Platform fractionalises into 100 units of ₹10,000 each.
+3. Retail investor A buys 2 fractions (₹20,000) via limit order.
+4. Institutional B posts a sell order for 10 fractions; matching engine matches 2 fractions to A.
+5. Ledger updates: A holds 2 fractions; B holds remaining 8 fractions; cash flows reserved and settled per T+0/T+1 rule.
+
+---
+
+### Appendix B — Quick Wireframes (text)
+
+* Home: market summary, top movers, yields
+* Bond detail: order book, place order panel, depth chart
+* Portfolio: holdings, unrealised P/L, settlement schedule
+* Market maker: inventory, quotes management
+
+---
+
+If you want, I can now:
+
+* Convert this PDK into a clickable Figma flow,
+* Produce a prioritized sprint backlog for the first 8 weeks,
+* Or generate a short investor-ready pitch deck from this PDK.
+
+*End of PDK.*
